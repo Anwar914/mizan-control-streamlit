@@ -289,5 +289,18 @@ with st.sidebar:
         st.switch_page(PAGES["home"])
 
 pg.run()
+if ss.get("_rendered_page") != pg.url_path:
+    # Streamlit/Cloud can restore the previous scroll offset on root navigation.
+    # Reset only when entering a page, never while adjusting a lab control.
+    st.html('''<script>
+    const resetView = () => {
+        const main = document.querySelector('[data-testid="stMain"]');
+        if (main) main.scrollTo({top:0,left:0,behavior:'instant'});
+        window.scrollTo({top:0,left:0,behavior:'instant'});
+    };
+    requestAnimationFrame(() => requestAnimationFrame(resetView));
+    setTimeout(resetView, 200);
+    </script>''', unsafe_allow_javascript=True)
+    ss["_rendered_page"] = pg.url_path
 st.divider()
 st.caption("ميزان · محتوى من control_arabic.zip المرفق · تطوير مستقل. Studyflix مرجع لتنظيم الموضوعات فقط؛ لم تُنسخ الفيديوهات أو الصور.")
