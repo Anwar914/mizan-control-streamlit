@@ -4,22 +4,36 @@ import json
 import math
 import re
 import time
+import base64
+from html import escape
 
 import bleach
 import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).parent
-st.set_page_config(page_title="ميزان | هندسة التحكم", page_icon="⚙️", layout="wide")
+st.set_page_config(page_title="ميزان | هندسة التحكم", page_icon="⚙️", layout="wide", initial_sidebar_state="expanded")
 st.html("""<style>
 [data-testid="stMain"], [data-testid="stSidebar"] {direction:rtl;text-align:right}
 [data-testid="stMarkdownContainer"] {text-align:right}
 [data-testid="stMetric"] {background:#fff;border:1px solid #e8e8f2;border-radius:16px;padding:18px}
+[data-testid="stMetricValue"] {direction:ltr;unicode-bidi:isolate;text-align:right}
+[data-testid="stAppViewContainer"] {direction:rtl}
+[data-testid="stMainBlockContainer"] {max-width:1500px;padding-top:2rem}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {color:#eeeefe}
+[data-testid="stSidebarNavLink"] {border-radius:10px;padding:8px 12px}
+[data-testid="stSidebarNavLink"][aria-current="page"] {background:#6552e8}
+[data-testid="stVerticalBlockBorderWrapper"] {background:#fff;border-radius:18px}
 [data-testid="stSidebar"] {border-left:1px solid #e8e8f2}
 .katex, [data-testid="stVegaLiteChart"], [data-testid="stSlider"] {direction:ltr}
 h1,h2,h3 {letter-spacing:0!important}
-.hero {background:linear-gradient(125deg,#171930,#35305b);color:#fff;padding:36px;border-radius:22px;margin-bottom:24px}
-.hero h2 {color:#d7fb91}.hero p {color:#d7d8e8}
+.hero {background:linear-gradient(125deg,#171930,#302b53);color:#fff;padding:32px;border-radius:22px;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;overflow:hidden;gap:12px}
+.hero h2 {color:white;font-size:clamp(26px,3vw,43px);line-height:1.6;margin:16px 0}.hero h2 em {color:#d7fb91;font-style:normal}.hero p {color:#c9cade;font-size:14px;line-height:1.9}.hero img {width:100%;max-height:340px;object-fit:contain}
+.topline {display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;gap:16px}.topline h1{font-size:27px;margin:8px 0}.eyebrow{color:#74758a;font-size:12px}.xp{background:white;border-radius:30px;padding:10px 20px;font-size:12px;color:#6552e8}
+.brand{display:flex;gap:12px;align-items:center;margin:5px 0 28px}.brand b{font-size:30px;color:white}.brand small{display:block;font-size:11px;color:#adafc8}.brand-mark{background:#d7fb91;color:#173a30;padding:4px 13px;border-radius:16px 16px 16px 4px;font-size:30px;font-weight:bold}
+.step-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid #eeedf6}.step-num{background:#eeebfc;color:#6552e8;border-radius:12px;padding:10px;font-weight:bold}.step-row h3{font-size:17px;margin:0}.step-row p{font-size:12px;color:#74758a;margin:5px 0}
+.tool-icon{color:#087e83;background:#e6f5f2;font-size:28px;padding:7px 15px;border-radius:14px;display:inline-block}.session-note{font-size:11px;color:#9295b5;margin-top:25px}
+@media(max-width:700px){.hero{grid-template-columns:1fr;padding:25px}.hero img{max-height:220px}.topline h1{font-size:21px}[data-testid="stMainBlockContainer"]{padding:1rem}.xp{white-space:nowrap}.hero p{font-size:13px}}
 </style>""")
 
 @st.cache_data
@@ -38,20 +52,55 @@ def clean(text):
     return bleach.clean(text, tags={"p","div","span","strong","b","em","i","code","pre","ul","ol","li","table","thead","tbody","tr","th","td","h1","h2","h3","h4","br","hr","sup","sub","blockquote"}, attributes={}, strip=True)
 
 def home():
-    st.html('<div class="hero"><small>ميزان / مساحة للفهم والتجربة</small><h2>الفكرة تصبح أوضح حين تراها تعمل.</h2><p>هندسة التحكم بالعربية · اقرأ الفكرة، اختبر النموذج، ثم ثبّت معرفتك.</p></div>')
-    cols = st.columns(3)
-    cols[0].metric("دروس مكتملة", f"{len(ss.done)} / 9")
-    cols[1].metric("أسئلة أتقنتها", f"{sum(ss.answers.values())} / 5")
-    cols[2].metric("بطاقات تذكّرتها", f"{len(ss.known)} / 12")
-    st.subheader("مسارك، خطوة بخطوة")
-    for name, nums in [("01 · البداية وفكرة التحكم", [1,2]), ("02 · لغة النمذجة الرياضية", [3,4,5]), ("03 · من P إلى PID", [6,7]), ("04 · من النموذج إلى التطبيق", [8,9])]:
+    xp = 20*len(ss.done)+10*sum(ss.answers.values())+5*len(ss.known)
+    st.html(f'<div class="topline"><div><small class="eyebrow">مسارك في هندسة التحكم</small><h1>مرحبًا بك في مساحة التعلّم.</h1></div><span class="xp">مستكشف · <bdi>{xp} XP</bdi></span></div>')
+    image = base64.b64encode((ROOT/"thermal-rig.svg").read_bytes()).decode()
+    st.html(f'<section class="hero"><div><small>تعلّم بفهم، لا بالحفظ وحده</small><h2>الفكرة تصبح أوضح<br>حين <em>تراها تعمل.</em></h2><p>دروس عربية، مختبرات تفاعلية، ومراجعة لتنظيم معرفتك. كل خطوة تربط المعادلة بعالم حقيقي.</p></div><img src="data:image/svg+xml;base64,{image}" alt="حجرة تسخين وحساس ووحدة تحكم" /></section>')
+    with st.container(horizontal=True):
+        if st.button("واصل رحلتك ←",type="primary"):
+            st.switch_page(PAGES["lessons"])
+        if st.button("افتح المختبر الحراري",icon=":material/science:"):
+            st.switch_page(PAGES["lab"])
+    cols = st.columns(4)
+    cols[0].metric("دروس أنهيتها", f"{len(ss.done)} / 9")
+    cols[1].metric("بطاقات للمراجعة", len(TERMS)-len(ss.known))
+    cols[2].metric("أسئلة أتقنتها", f"{sum(ss.answers.values())} / 5")
+    cols[3].metric("نقاط معرفة مكتسبة", xp)
+    path, today = st.columns([1.3,1],gap="large")
+    with path:
+        st.subheader("مسارك، خطوة بخطوة")
         with st.container(border=True):
-            st.markdown(f"### {name}")
-            for l in course["lessons"]:
-                if l["number"] in nums:
-                    st.markdown(f"{'✓' if l['number'] in ss.done else '○'} **{title(l['title'])}**")
-    st.info("الملاحظات والتقدم محفوظان في الجلسة الحالية فقط. نزّل نسخة من دفتر الملاحظات قبل إغلاقها؛ لا توجد مزامنة سحابية.")
-    st.link_button("الكتاب والمختبرات السابقة ↗", "https://mizan-control-ar.nuttycream6.chatgpt.site/book.html")
+            for i,(name,nums) in enumerate([("البداية وفكرة التحكم",[1,2]),("لغة النمذجة الرياضية",[3,4,5]),("من P إلى PID",[6,7]),("من النموذج إلى التطبيق",[8,9])],1):
+                count = sum(n in ss.done for n in nums)
+                st.html(f'<div class="step-row"><span class="step-num">0{i}</span><div><h3>{name}</h3><p>{len(nums)} دروس · أنهيت {count}</p></div></div>')
+                if st.button("استكشف ←",key=f"path-{i}"):
+                    ss["lesson-choice"] = nums[0]
+                    st.switch_page(PAGES["lessons"])
+    with today:
+        st.subheader("مساحة اليوم")
+        with st.container(border=True):
+            st.caption("ابدأ بخطوة واحدة")
+            next_lesson = next((l for l in course["lessons"] if l["number"] not in ss.done),course["lessons"][0])
+            st.markdown(f"### {title(next_lesson['title'])}")
+            st.progress(len(ss.done)/9)
+            st.caption("اقرأ المفهوم، ثم جرّبه في المختبر.")
+            if st.button("ابدأ الدرس",width="stretch"):
+                ss["lesson-choice"] = next_lesson["number"]
+                st.switch_page(PAGES["lessons"])
+            if st.button("مراجعة قصيرة · بطاقات المصطلحات",width="stretch"):
+                st.switch_page(PAGES["cards"])
+            if st.button("وقت بلا مشتتات · جلسة تركيز",width="stretch"):
+                st.switch_page(PAGES["focus"])
+        st.caption("مساحة شخصية: التقدم والملاحظات للجلسة الحالية. نزّل ملاحظاتك قبل إغلاقها.")
+    st.subheader("مساحات للتجربة")
+    for col,icon,heading,desc,dest in zip(st.columns(3),["♨","∿","▤"],["مختبر حراري حيّ","P أم PI أم PID؟","اختبر فهمك"],["درجة حرارة، حساس، وقدرة تسخين.","قارن الاستجابة والخطأ على منحنى واحد.","تفسير لكل إجابة ودفتر لإعادة الأخطاء."],[lab,lab,quiz]):
+        with col,st.container(border=True):
+            st.html(f'<span class="tool-icon">{icon}</span>')
+            st.markdown(f"### {heading}")
+            st.caption(desc)
+            if st.button("افتح ←",key=f"tool-{icon}"):
+                st.switch_page(PAGES[dest.__name__])
+    st.link_button("الكتاب المرجعي والمختبرات السابقة ↗", "https://mizan-control-ar.nuttycream6.chatgpt.site/book.html")
 
 def lessons():
     st.title("مكتبتك في هندسة التحكم")
@@ -60,7 +109,10 @@ def lessons():
     if not items:
         st.info("لا توجد نتائج مطابقة.")
         return
-    num = st.selectbox("اختر الدرس", [l["number"] for l in items], format_func=lambda n: title(next(l["title"] for l in items if l["number"] == n)))
+    numbers = [l["number"] for l in items]
+    if ss.get("lesson-choice") not in numbers:
+        ss["lesson-choice"] = numbers[0]
+    num = st.selectbox("اختر الدرس", numbers, key="lesson-choice", persist_state="session", format_func=lambda n: title(next(l["title"] for l in items if l["number"] == n)))
     lesson = next(l for l in items if l["number"] == num)
     with st.container(border=True):
         for block in lesson["blocks"]:
@@ -166,7 +218,8 @@ def quiz():
     if retry and not ss.wrong:
         st.success("لا توجد أسئلة تحتاج إعادة حاليًا.")
 
-TERMS = [("المنظومة","System","علاقة بين دخل وخرج وحالة داخلية."),("القيمة المطلوبة","Sollwert","القيمة التي نريد أن يصل إليها الخرج."),("القيمة الفعلية","Istwert","القيمة التي يقيسها الحساس."),("المتحكّم","Regler","يحسب فعل التحكم انطلاقًا من الخطأ."),("منظومة التحكم","Regelstrecke","العملية التي نريد التحكم فيها."),("التغذية الراجعة","Rückkopplung","إعادة القياس لمقارنته بالمرجع."),("الخطأ","Regelabweichung","e(t) = r(t) − y(t)"),("الاضطراب","Störgröße","تأثير خارجي يغيّر سلوك النظام."),("دالة الانتقال","Übertragungsfunktion","نسبة تحويل الخرج إلى تحويل الدخل عند حالة ابتدائية صفرية."),("الاستقرار","Stabilität","للنظام LTI المستمر التقاربي: الأقطاب في النصف الأيسر المفتوح."),("الثابت الزمني","Zeitkonstante","لنظام PT1: يصل الخرج إلى نحو 63.2% من التغير النهائي عند t=τ."),("التجاوز","Überschwingen","ارتفاع الاستجابة فوق القيمة النهائية.")]
+TERMS = json.loads((ROOT / "terms.json").read_text(encoding="utf-8"))
+TERMS += [(q["q"], q["options"][q["correct"]], q["explanation"]) for q in course["questions"]]
 
 def cards():
     st.title("بطاقات عربية · ألمانية")
@@ -220,7 +273,21 @@ def focus():
             st.success("انتهت الجلسة. خذ استراحة قصيرة.")
     clock()
 
-pg = st.navigation({"مساحة التعلّم": [st.Page(home,title="لوحة التعلّم",icon=":material/home:",default=True), st.Page(lessons,title="مكتبتي ودروسي",icon=":material/menu_book:"),st.Page(cards,title="بطاقات المراجعة",icon=":material/style:"),st.Page(quiz,title="اختبر فهمك",icon=":material/quiz:"),st.Page(notes,title="ملاحظاتي",icon=":material/edit_note:"),st.Page(focus,title="جلسة تركيز",icon=":material/timer:")],"من النظرية إلى الواقع":[st.Page(lab,title="مختبر P · PI · PID",icon=":material/science:")]})
+PAGES = {
+    "home": st.Page(home, title="لوحة التعلّم", icon=":material/home:", default=True, url_path=""),
+    "lessons": st.Page(lessons, title="مكتبتي ودروسي", icon=":material/menu_book:"),
+    "cards": st.Page(cards, title="بطاقات المراجعة", icon=":material/style:"),
+    "quiz": st.Page(quiz, title="اختبر فهمك", icon=":material/quiz:"),
+    "notes": st.Page(notes, title="ملاحظاتي", icon=":material/edit_note:"),
+    "focus": st.Page(focus, title="جلسة تركيز", icon=":material/timer:"),
+    "lab": st.Page(lab, title="مختبر P · PI · PID", icon=":material/science:")
+}
+pg = st.navigation({"مساحة التعلّم": [PAGES[n] for n in ["home","lessons","cards","quiz","notes","focus"]], "من النظرية إلى الواقع": [PAGES["lab"]]})
+with st.sidebar:
+    st.html('<div class="brand"><span class="brand-mark">م</span><div><b>ميزان</b><small>مساحة للفهم والتجربة</small></div></div>')
+    if st.button("العودة إلى الصفحة الرئيسية", icon=":material/home:", width="stretch"):
+        st.switch_page(PAGES["home"])
+
 pg.run()
 st.divider()
 st.caption("ميزان · محتوى من control_arabic.zip المرفق · تطوير مستقل. Studyflix مرجع لتنظيم الموضوعات فقط؛ لم تُنسخ الفيديوهات أو الصور.")
