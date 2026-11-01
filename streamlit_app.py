@@ -12,7 +12,7 @@ import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).parent
-st.set_page_config(page_title="ميزان | هندسة التحكم", page_icon="⚙️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="ميزان | هندسة التحكم", page_icon="⚙️", layout="wide", initial_sidebar_state="auto")
 st.html("""<style>
 [data-testid="stMain"], [data-testid="stSidebar"] {direction:rtl;text-align:right}
 [data-testid="stMarkdownContainer"] {text-align:right}
