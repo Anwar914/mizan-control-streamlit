@@ -1,6 +1,6 @@
 # Mizan — Arabic control engineering / Streamlit
 
-Native Streamlit learning app: nine Arabic lessons from the user-supplied archive, five quizzes with an error-review mode, twelve Arabic/German flashcards, session notes, focus timer and a thermal P/PI/PID simulator with comparison and CSV export.
+Native Streamlit learning app: nine Arabic lessons from the user-supplied archive, five quizzes with an error-review mode, 24 Arabic/German flashcards, session notes, focus timer and a thermal P/PI/PID simulator with comparison, step-response metrics (overshoot, 2 % settling time, final error) and CSV export. The Anatomy thermal rig is live: the display bar follows the temperature, the eight LEDs and the heater glow follow the controller output u at the chosen time; on the dashboard it reflects lesson progress.
 
 Run: `python -m streamlit run streamlit_app.py`
 

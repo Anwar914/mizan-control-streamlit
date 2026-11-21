@@ -32,8 +32,18 @@ h1,h2,h3 {letter-spacing:0!important}
 .topline {display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;gap:16px}.topline h1{font-size:27px;margin:8px 0}.eyebrow{color:#74758a;font-size:12px}.xp{background:white;border-radius:30px;padding:10px 20px;font-size:12px;color:#6552e8}
 .brand{display:flex;gap:12px;align-items:center;margin:5px 0 28px}.brand b{font-size:30px;color:white}.brand small{display:block;font-size:11px;color:#adafc8}.brand-mark{background:#d7fb91;color:#173a30;padding:4px 13px;border-radius:16px 16px 16px 4px;font-size:30px;font-weight:bold}
 .step-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid #eeedf6}.step-num{background:#eeebfc;color:#6552e8;border-radius:12px;padding:10px;font-weight:bold}.step-row h3{font-size:17px;margin:0}.step-row p{font-size:12px;color:#74758a;margin:5px 0}
+/* Anatomy plate (MIT) around the live rig */
+.iso-figure{margin:0}.iso-plate{position:relative;padding:46px 18px;border-radius:16px;box-shadow:0 0 0 1px #e1e0ec;background:#fbfbfa}
+.iso-plate img{display:block;width:100%;height:auto}
+.iso-plate-corners{position:absolute;inset:16px 18px;pointer-events:none;direction:ltr}
+.iso-plate-corner{position:absolute;color:#8c8c90;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:#57575a}.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:#57575a;font-variant-numeric:tabular-nums}
+.iso-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;color:#74758a;font-size:13px;line-height:1.55}
+.iso-key{display:inline-flex;align-items:center;gap:7px}.iso-chip{width:16px;height:3px;border-radius:2px;flex:none}
+.hero .rig{width:100%;max-height:340px;object-fit:contain}
 .tool-icon{color:#087e83;background:#e6f5f2;font-size:28px;padding:7px 15px;border-radius:14px;display:inline-block}.session-note{font-size:11px;color:#9295b5;margin-top:25px}
-@media(max-width:700px){.hero{grid-template-columns:1fr;padding:25px}.hero img{max-height:220px}.topline h1{font-size:21px}[data-testid="stMainBlockContainer"]{padding:1rem}.xp{white-space:nowrap}.hero p{font-size:13px}}
+@media(max-width:700px){.hero{grid-template-columns:1fr;padding:25px}.hero .rig{max-height:220px}.topline h1{font-size:21px}[data-testid="stMainBlockContainer"]{padding:1rem}.xp{white-space:nowrap}.hero p{font-size:13px}}
 </style>""")
 
 @st.cache_data
@@ -41,6 +51,44 @@ def load_course():
     return json.loads((ROOT / "course.json").read_text(encoding="utf-8-sig"))
 
 course = load_course()
+
+@st.cache_data
+def rig_source():
+    return (ROOT / "thermal-rig.svg").read_text(encoding="utf-8")
+
+def heat_color(x):
+    """Neutral grey -> amber -> red, x in [0, 1]."""
+    stops = [(0., (138, 138, 143)), (.5, (245, 165, 36)), (1., (229, 72, 77))]
+    x = min(1., max(0., x))
+    for (x0, c0), (x1, c1) in zip(stops, stops[1:]):
+        if x <= x1:
+            f = (x-x0)/(x1-x0)
+            return "#%02x%02x%02x" % tuple(round(a+(b-a)*f) for a, b in zip(c0, c1))
+
+def mix(color, base, f):
+    c = [int(color[i:i+2], 16) for i in (1, 3, 5)]
+    b = [int(base[i:i+2], 16) for i in (1, 3, 5)]
+    return "#%02x%02x%02x" % tuple(round(x+(y-x)*f) for x, y in zip(c, b))
+
+def rig_svg(level, power, label):
+    """Drive the Anatomy rig: level (0..1) fills the display bar, power (0..1)
+    lights the eight LEDs and makes the heater elements glow."""
+    svg = rig_source()
+    heat = heat_color(power)
+    svg = svg.replace("--anatomy-lit:#2f9e98;--anatomy-lit-top:#bfe9e4;--anatomy-lit-shade:#75b9b3",
+                      f"--anatomy-lit:{heat};--anatomy-lit-top:{mix(heat,'#ffffff',.55)};--anatomy-lit-shade:{mix(heat,'#ffffff',.2)};--rig-heat:{heat}", 1)
+    h = 18*min(1., max(0., level))
+    svg = svg.replace('d="M372.64 279.57L379.10 283.15L379.10 283.15L372.64 279.57Z" fill="var(--anatomy-lit)"',
+                      f'd="M372.64 279.57L379.10 283.15L379.10 {283.15-h:.2f}L372.64 {279.57-h:.2f}Z" fill="{heat_color(level)}"', 1)
+    lit = round(8*min(1., max(0., power)))
+    for n in range(8):
+        if n < lit:
+            svg = re.sub(rf'(data-led="{n}"[^>]*?)opacity="\.16"', r'\1opacity="1"', svg, count=1)
+    svg = svg.replace('aria-label="', f'aria-label="{escape(label)} · ', 1)
+    svg = svg.replace('viewBox="0 0 720 440"', 'viewBox="105 25 510 375"', 1)  # crop to the drawing
+    data = base64.b64encode(svg.encode("utf-8")).decode()
+    return f'<img class="rig" src="data:image/svg+xml;base64,{data}" alt="{escape(label)}" />', heat
+
 ss = st.session_state
 for key, value in {"done": [], "notes": {}, "answers": {}, "wrong": [], "known": [], "card": 0, "flip": False, "focus_end": None}.items():
     ss.setdefault(key, value)
@@ -54,8 +102,9 @@ def clean(text):
 def home():
     xp = 20*len(ss.done)+10*sum(ss.answers.values())+5*len(ss.known)
     st.html(f'<div class="topline"><div><small class="eyebrow">مسارك في هندسة التحكم</small><h1>مرحبًا بك في مساحة التعلّم.</h1></div><span class="xp">مستكشف · <bdi>{xp} XP</bdi></span></div>')
-    image = base64.b64encode((ROOT/"thermal-rig.svg").read_bytes()).decode()
-    st.html(f'<section class="hero"><div><small>تعلّم بفهم، لا بالحفظ وحده</small><h2>الفكرة تصبح أوضح<br>حين <em>تراها تعمل.</em></h2><p>دروس عربية، مختبرات تفاعلية، ومراجعة لتنظيم معرفتك. كل خطوة تربط المعادلة بعالم حقيقي.</p></div><img src="data:image/svg+xml;base64,{image}" alt="حجرة تسخين وحساس ووحدة تحكم" /></section>')
+    progress = len(ss.done)/9
+    rig, _ = rig_svg(progress, progress, f"حجرة تسخين ووحدة تحكم · أنهيت {len(ss.done)} من 9 دروس")
+    st.html(f'<section class="hero"><div><small>تعلّم بفهم، لا بالحفظ وحده</small><h2>الفكرة تصبح أوضح<br>حين <em>تراها تعمل.</em></h2><p>دروس عربية، مختبرات تفاعلية، ومراجعة لتنظيم معرفتك. كل خطوة تربط المعادلة بعالم حقيقي.</p></div>{rig}</section>')
     with st.container(horizontal=True):
         if st.button("واصل رحلتك ←",type="primary"):
             st.switch_page(PAGES["lessons"])
@@ -159,6 +208,17 @@ def simulate(mode, target, kp, ki, kd, a, b, antiwindup):
         temp = 20+(temp-20)*math.exp(-b*dt)+a*u/b*(1-math.exp(-b*dt))
     return pd.DataFrame(out)
 
+def step_metrics(data, target):
+    temp = data["T (°C)"].to_numpy()
+    time_s = data["t (s)"].to_numpy()
+    step = max(target-20, 1e-9)
+    outside = abs(temp-target) > .02*step
+    settling = None
+    if not outside[-1]:
+        last = outside.nonzero()[0]
+        settling = float(time_s[last[-1]+1]) if len(last) else 0.
+    return {"overshoot": max(0., (temp.max()-target)/step*100), "settling": settling, "final_error": float(target-temp[-1])}
+
 def lab():
     st.title("المختبر الحراري · P / PI / PID")
     st.caption("غيّر معاملًا واحدًا وراقب أثره على الاستجابة. كل منحنى يحسب النموذج نفسه.")
@@ -176,10 +236,24 @@ def lab():
     data = simulate(mode, target, kp, ki, kd, a, b, aw)
     at = st.slider("استكشف الزمن t (s)", 0., 240., 20., .2)
     row = data.iloc[min(len(data)-1, round(at/.2))]
+    figure, readings = st.columns([1.35, 1], gap="large")
+    with figure:
+        level = (row["T (°C)"]-20)/80
+        svg, heat = rig_svg(level, row["u"]/8, f"T = {row['T (°C)']:.1f} °C, u = {row['u']:.2f}")
+        st.html(f'''<figure class="iso-figure"><div class="iso-plate">
+<div class="iso-plate-corners"><span class="iso-plate-corner" data-corner="fig">FIG. 01 · {mode}</span><span class="iso-plate-corner" data-corner="title">thermal rig</span>
+<span class="iso-plate-corner" data-corner="hint">t = {at:.1f} s</span><span class="iso-plate-corner" data-corner="readout">T {row['T (°C)']:.1f} °C · u {row['u']:.2f}/8</span></div>{svg}</div>
+<figcaption class="iso-legend"><span class="iso-key"><span class="iso-chip" style="background:{heat}"></span>توهج السخان ومؤشرات LED = خرج المتحكّم u</span>
+<span class="iso-key"><span class="iso-chip" style="background:{heat_color(level)}"></span>العمود في الشاشة = درجة الحرارة (20–100 °C)</span></figcaption></figure>''')
+    with readings:
+        st.metric("درجة الحرارة", f"{row['T (°C)']:.1f} °C")
+        st.metric("الخطأ الحالي", f"{target-row['T (°C)']:.1f} °C")
+        st.metric("خرج المتحكّم", f"{row['u']:.2f} / 8")
+    perf = step_metrics(data, target)
     cols = st.columns(3)
-    cols[0].metric("درجة الحرارة", f"{row['T (°C)']:.1f} °C")
-    cols[1].metric("الخطأ الحالي", f"{target-row['T (°C)']:.1f} °C")
-    cols[2].metric("خرج المتحكّم", f"{row['u']:.2f} / 8")
+    cols[0].metric("التجاوز الأقصى", f"{perf['overshoot']:.1f} %", help="أعلى قيمة فوق الهدف كنسبة من قفزة المرجع (الهدف − 20 °C).")
+    cols[1].metric("زمن الاستقرار ±2 %", "لم يستقر" if perf["settling"] is None else f"{perf['settling']:.1f} s", help="أول زمن تبقى بعده درجة الحرارة داخل نطاق ±2 % من قفزة المرجع حول الهدف.")
+    cols[2].metric("الخطأ عند t = 240 s", f"{perf['final_error']:.2f} °C", help="بدون تكامل (P) يبقى خطأ دائم؛ PI وPID يزيلانه.")
     st.line_chart(data.set_index("t (s)")[["T (°C)","الهدف (°C)"]], color=["#087e83","#bd622b"], x_label="t (s)", y_label="°C")
     compare = st.toggle("قارن P وPI وPID على المنحنى نفسه")
     if compare:
@@ -219,13 +293,13 @@ def quiz():
         st.success("لا توجد أسئلة تحتاج إعادة حاليًا.")
 
 TERMS = json.loads((ROOT / "terms.json").read_text(encoding="utf-8"))
-TERMS += [(q["q"], q["options"][q["correct"]], q["explanation"]) for q in course["questions"]]
 
 def cards():
     st.title("بطاقات عربية · ألمانية")
     i = ss.card % len(TERMS)
     ar, de, meaning = TERMS[i]
-    st.caption(f"البطاقة {i+1} / {len(TERMS)}")
+    st.caption(f"البطاقة {i+1} / {len(TERMS)} · تذكّرت {len(ss.known)}")
+    st.progress(len(ss.known)/len(TERMS))
     with st.container(border=True):
         st.header(ar)
         if ss.flip:
