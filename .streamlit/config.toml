@@ -1,20 +1,23 @@
 [theme]
 base = "light"
-primaryColor = "#6552e8"
-backgroundColor = "#f6f6fb"
-secondaryBackgroundColor = "#eeedf6"
-textColor = "#22243c"
-font = "sans serif"
-borderColor = "#e1e0ec"
+primaryColor = "#13262d"
+backgroundColor = "#f3f5f4"
+secondaryBackgroundColor = "#e6ecea"
+textColor = "#13262d"
+font = "Noto Naskh Arabic:https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600&display=swap"
+headingFont = "Reem Kufi:https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600&display=swap"
+baseFontSize = 16
+borderColor = "#d9e1df"
 showWidgetBorder = true
-baseRadius = "large"
-chartCategoricalColors = ["#087e83", "#6552e8", "#bd622b"]
+baseRadius = "small"
+chartCategoricalColors = ["#0c7c84", "#13262d", "#d4521c"]
 
 [theme.sidebar]
-backgroundColor = "#171930"
-secondaryBackgroundColor = "#292b48"
-textColor = "#eeeeff"
-primaryColor = "#d7fb91"
+backgroundColor = "#13262d"
+secondaryBackgroundColor = "#1f3640"
+textColor = "#e9efee"
+primaryColor = "#7fd1d6"
+borderColor = "#2b4550"
 
 [browser]
 gatherUsageStats = false
