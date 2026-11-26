@@ -19,13 +19,16 @@ st.html("""<style>
 --display:"Reem Kufi",var(--body);--body:"Noto Naskh Arabic","Noto Sans Arabic",serif}
 [data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stSidebar"]{direction:rtl;text-align:right}
 [data-testid="stMarkdownContainer"]{text-align:right}
-[data-testid="stMainBlockContainer"]{max-width:1240px;padding-top:2.25rem}
-h1,h2,h3,h4{font-family:var(--display)!important;letter-spacing:0!important;font-weight:600!important}
+[data-testid="stMainBlockContainer"]{max-width:1240px;padding-top:4.75rem}
+h1,h2{font-family:var(--display)!important;letter-spacing:0!important;font-weight:600!important}
+h2{font-size:1.75rem!important}
+h3,h4{font-family:var(--body)!important;font-weight:600!important;letter-spacing:0!important;line-height:1.7!important}
+h3{font-size:1.2rem!important}
 [data-testid="stMetric"]{border-top:2px solid var(--ink);padding:10px 0 0}
 [data-testid="stMetricValue"]{direction:ltr;unicode-bidi:isolate;text-align:right;font-variant-numeric:tabular-nums}
 [data-testid="stVerticalBlockBorderWrapper"]{background:var(--panel);border-radius:8px}
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"]{color:#e9efee}
-[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"]{visibility:hidden}
+[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"],[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarCollapseButton"] *{visibility:hidden!important}
 [data-testid="stSidebarNavLink"]{border-radius:6px;padding:8px 12px;border-right:3px solid transparent}
 [data-testid="stSidebarNavLink"][aria-current="page"]{background:#ffffff14;border-right-color:#7fd1d6}
 :focus-visible{outline:2px solid var(--measure)!important;outline-offset:2px}
@@ -35,12 +38,13 @@ h1,h2,h3,h4{font-family:var(--display)!important;letter-spacing:0!important;font
 .greet{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:8px}
 .greet p{margin:0;color:var(--muted);font-size:15px}.points{color:var(--ink);font-size:14px;white-space:nowrap}.points bdi{font-variant-numeric:tabular-nums;font-weight:600}
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:40px;align-items:center;padding:28px 0 8px}
-.hero h1{font-family:var(--display);font-size:clamp(36px,4.6vw,64px);line-height:1.35;margin:0 0 18px;color:var(--ink)}
+.hero h1{text-wrap:balance;font-family:var(--display);font-size:clamp(36px,4.6vw,64px);line-height:1.35;margin:0 0 18px;color:var(--ink)}
 .hero p{font-size:17px;line-height:2;color:var(--muted);max-width:46ch;margin:0}
 .curve{position:relative}.curve img{display:block;width:100%;height:auto}
 .curve .lbl{position:absolute;font-size:13px;color:var(--muted);white-space:nowrap}
 .curve .goal{top:calc(19.3% - 30px);right:0}.curve .you{color:var(--measure);font-weight:600}
 .readouts{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:24px;margin:8px 0 4px}
+.readouts.stack{grid-template-columns:1fr;gap:28px;margin-top:4px}
 .readout{border-top:2px solid var(--role,var(--ink));padding-top:10px}
 .readout span{display:block;color:var(--muted);font-size:14px}
 .readout b{display:block;font-family:var(--body);font-size:30px;font-weight:600;color:var(--ink);direction:ltr;unicode-bidi:isolate;text-align:right;font-variant-numeric:tabular-nums;line-height:1.5}
@@ -48,7 +52,16 @@ h1,h2,h3,h4{font-family:var(--display)!important;letter-spacing:0!important;font
 .stage{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;padding-top:6px}
 .stage i{font-style:normal;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--ink);font-family:var(--display);font-size:17px;color:var(--ink);background:var(--paper)}
 .stage[data-done] i{background:var(--measure);border-color:var(--measure);color:#fff}
-.stage h3{font-size:19px;margin:0}.stage p{margin:2px 0 0;color:var(--muted);font-size:14px}
+[class*="st-key-path-"]{margin:-10px 54px 10px 0}[class*="st-key-path-"] button{color:var(--measure)!important;font-weight:600}
+.st-key-practice button{justify-content:flex-start;padding:10px 14px;min-height:48px}.st-key-practice button>div{width:100%;justify-content:flex-start}.st-key-practice button>div>span{gap:10px}.st-key-practice button p{font-size:15px}
+.st-key-practice a{color:var(--measure);font-weight:600;text-decoration-thickness:1px;text-underline-offset:4px}
+.st-key-flashcard{max-width:640px;padding:22px 26px!important}
+.fc-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:14px}.fc-bar{height:3px;background:var(--grid);margin:8px 0 26px}.fc-bar i{display:block;height:100%;background:var(--measure)}
+.fc-term{font-family:var(--display);font-size:clamp(38px,6vw,56px);line-height:1.4;margin:0 0 6px;color:var(--ink)}
+.fc-de{font-size:26px;font-weight:600;color:var(--measure);margin:0;text-align:right}.fc-meaning{font-size:17px;line-height:1.9;color:var(--ink);margin:4px 0 8px;max-width:52ch}
+.timer{max-width:640px;border-top:2px solid var(--measure);padding-top:12px}.timer span{color:var(--muted);font-size:15px}
+.timer b{display:block;font-family:var(--body);font-weight:600;font-size:clamp(72px,14vw,140px);line-height:1.2;color:var(--ink);direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.stage h3{font-size:18px!important;margin:0;padding:0}.stage p{margin:2px 0 0;color:var(--muted);font-size:14px}
 .brand{display:flex;gap:12px;align-items:center;margin:4px 0 26px}.brand b{font-family:var(--display);font-size:30px;color:#fff;font-weight:600}
 .brand small{display:block;font-size:12px;color:#a9bbbd}.brand-mark{background:var(--paper);color:var(--ink);width:44px;height:44px;border-radius:8px;display:grid;place-items:center;font-family:var(--body);font-weight:600;font-size:30px;line-height:1;padding-bottom:4px}
 /* Anatomy plate (MIT) around the live rig */
@@ -58,7 +71,10 @@ h1,h2,h3,h4{font-family:var(--display)!important;letter-spacing:0!important;font
 .iso-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.6}
 .iso-key{display:inline-flex;align-items:center;gap:7px}.iso-chip{width:16px;height:3px;border-radius:2px;flex:none}
 @media(max-width:760px){.hero{grid-template-columns:1fr;gap:18px;padding-top:8px}.readouts{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.readout b{font-size:24px}
-[data-testid="stMainBlockContainer"]{padding:1rem 16px}.greet{flex-direction:column;gap:2px}}
+.readouts.stack{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.readouts.stack b{font-size:19px}.readouts.stack span{font-size:12.5px;line-height:1.6}
+.readouts.noted{grid-template-columns:1fr}
+[data-testid="stHorizontalBlock"]{gap:1rem!important}
+[data-testid="stMainBlockContainer"]{padding:4.25rem 16px 1rem}.greet{flex-direction:column;gap:2px}}
 </style>""")
 
 @st.cache_data
@@ -140,10 +156,11 @@ def step_curve(progress):
 <g class="m"><path d="M{mx:.1f} {my:.1f}V284" stroke="#0c7c84" stroke-dasharray="2 4"/><circle cx="{mx:.1f}" cy="{my:.1f}" r="8" fill="#f3f5f4" stroke="#0c7c84" stroke-width="3"/></g></svg>'''
     return "data:image/svg+xml;base64,"+base64.b64encode(svg.encode()).decode(), (mx/w*100, my/h*100)
 
-def readouts(items):
+def readouts(items, layout=""):
     """items: (label, value, note, role) with role in ink/measure/heat."""
     cells = "".join(f'<div class="readout" style="--role:var(--{role})"><span>{escape(label)}</span><b>{escape(value)}</b>{f"<small>{escape(note)}</small>" if note else ""}</div>' for label, value, note, role in items)
-    st.html(f'<div class="readouts" style="--n:{len(items)}">{cells}</div>')
+    noted = " noted" if all(note for _, _, note, _ in items) else ""
+    st.html(f'<div class="readouts {layout}{noted}" style="--n:{len(items)}">{cells}</div>')
 
 def home():
     done = len(ss.done)
@@ -168,16 +185,16 @@ def home():
               ("نقاطك", str(xp), "20 لكل درس، 10 لكل سؤال، 5 لكل بطاقة", "ink")])
     path, practice = st.columns([1.35, 1], gap="large")
     with path:
-        st.subheader("مسارك في أربع مراحل")
+        st.header("مسارك في أربع مراحل")
         for i, (name, nums) in enumerate([("البداية وفكرة التحكم", [1, 2]), ("لغة النمذجة الرياضية", [3, 4, 5]), ("من P إلى PID", [6, 7]), ("من النموذج إلى التطبيق", [8, 9])]):
             count = sum(n in ss.done for n in nums)
             first = next((n for n in nums if n not in ss.done), nums[0])
             st.html(f'<div class="stage"{" data-done" if count == len(nums) else ""}><i>{"١٢٣٤"[i]}</i><div><h3>{name}</h3><p>الدروس {nums[0]}–{nums[-1]}، أنهيت {count} من {len(nums)}</p></div></div>')
-            if st.button(f"افتح الدرس {first}", key=f"path-{i}"):
+            if st.button(f"افتح الدرس {first}", key=f"path-{i}", type="tertiary", icon=":material/menu_book:"):
                 ss["lesson-choice"] = first
                 st.switch_page(PAGES["lessons"])
-    with practice:
-        st.subheader("تدرّب اليوم")
+    with practice, st.container(key="practice"):
+        st.header("تدرّب اليوم")
         if st.button("اختبر فهمك في خمسة أسئلة", icon=":material/quiz:", width="stretch"):
             st.switch_page(PAGES["quiz"])
         if st.button("راجع المصطلحات بالعربية والألمانية", icon=":material/style:", width="stretch"):
@@ -185,7 +202,7 @@ def home():
         if st.button("جلسة تركيز لمدة 25 دقيقة", icon=":material/timer:", width="stretch"):
             st.switch_page(PAGES["focus"])
         st.caption("يُحفظ تقدّمك وملاحظاتك في هذه الجلسة فقط. نزّل ملاحظاتك من صفحة «ملاحظاتي» قبل أن تغلق المتصفح.")
-        st.link_button("الكتاب المرجعي والمختبرات السابقة ↗", "https://mizan-control-ar.nuttycream6.chatgpt.site/book.html", width="stretch")
+        st.markdown("[الكتاب المرجعي والمختبرات السابقة ↗](https://mizan-control-ar.nuttycream6.chatgpt.site/book.html)")
 
 def lessons():
     st.title("مكتبتك في هندسة التحكم")
@@ -280,10 +297,9 @@ def lab():
 <div class="iso-legend"><span class="iso-key"><span class="iso-chip" style="background:{heat}"></span>توهج السخان ومؤشرات LED: خرج المتحكّم u</span>
 <span class="iso-key"><span class="iso-chip" style="background:{heat_color(level)}"></span>العمود في الشاشة: درجة الحرارة من 20 إلى 100 °C</span></div></figure>''')
     with readings:
-        st.html('<div style="height:6px"></div>')
-        readouts([("درجة الحرارة T", f"{row['T (°C)']:.1f} °C", "", "measure")])
-        readouts([("الخطأ e = الهدف − T", f"{target-row['T (°C)']:.1f} °C", "", "ink")])
-        readouts([("خرج المتحكّم u", f"{row['u']:.2f} / 8", "", "heat")])
+        readouts([("درجة الحرارة T", f"{row['T (°C)']:.1f} °C", "", "measure"),
+                  ("الخطأ e = الهدف − T", f"{target-row['T (°C)']:.1f} °C", "", "ink"),
+                  ("خرج المتحكّم u", f"{row['u']:.2f} / 8", "", "heat")], "stack")
     perf = step_metrics(data, target)
     readouts([("التجاوز الأقصى", f"{perf['overshoot']:.1f} %", "أعلى قيمة فوق الهدف، نسبةً إلى قفزة المرجع", "measure"),
               ("زمن الاستقرار ±2 %", "لم يستقر" if perf["settling"] is None else f"{perf['settling']:.1f} s", "منذ متى تبقى T داخل نطاق ±2 % حول الهدف", "measure"),
@@ -307,8 +323,8 @@ def quiz():
             continue
         with st.container(border=True):
             st.markdown(f"### {q['q']}")
-            with st.form(f"q-{i}"):
-                pick = st.radio("اختر إجابة", q["options"], index=None, key=f"pick-{i}")
+            with st.form(f"q-{i}", border=False):
+                pick = st.radio("اختر إجابة", q["options"], index=None, key=f"pick-{i}", label_visibility="collapsed")
                 submit = st.form_submit_button("تحقّق من الإجابة")
             if submit:
                 if pick is None:
@@ -332,26 +348,31 @@ def cards():
     st.title("مصطلحات بالعربية والألمانية")
     i = ss.card % len(TERMS)
     ar, de, meaning = TERMS[i]
-    st.caption(f"البطاقة {i+1} من {len(TERMS)}، تذكّرت {len(ss.known)}")
-    st.progress(len(ss.known)/len(TERMS))
-    with st.container(border=True):
-        st.header(ar)
-        if ss.flip:
-            st.subheader(de)
-            st.write(meaning)
-        if st.button("اكشف الترجمة والمعنى"):
-            ss.flip = True
-            st.rerun()
-    with st.container(horizontal=True):
-        if st.button("تذكّرتها ✓", disabled=not ss.flip):
+    def advance(known):
+        if known:
             ss.known = sorted(set(ss.known + [i]))
-            ss.card += 1
-            ss.flip = False
-            st.rerun()
-        if st.button("البطاقة التالية"):
-            ss.card += 1
-            ss.flip = False
-            st.rerun()
+        ss.card += 1
+        ss.flip = False
+    with st.container(border=True, key="flashcard"):
+        st.html(f'<div class="fc-meta"><span>البطاقة {i+1} من {len(TERMS)}</span><span>تذكّرت {len(ss.known)}</span></div>'
+                f'<div class="fc-bar"><i style="width:{len(ss.known)/len(TERMS)*100:.1f}%"></i></div><p class="fc-term">{escape(ar)}</p>')
+        if ss.flip:
+            st.html(f'<p class="fc-de" dir="ltr" lang="de">{escape(de)}</p><p class="fc-meaning">{escape(meaning)}</p>')
+        with st.container(horizontal=True):
+            if not ss.flip:
+                if st.button("اكشف الترجمة والمعنى", type="primary"):
+                    ss.flip = True
+                    st.rerun()
+                if st.button("تخطَّ هذه البطاقة", type="tertiary"):
+                    advance(False)
+                    st.rerun()
+            else:
+                if st.button("تذكّرتها", type="primary", icon=":material/check:"):
+                    advance(True)
+                    st.rerun()
+                if st.button("راجعها لاحقًا"):
+                    advance(False)
+                    st.rerun()
 
 def notes():
     st.title("دفتر ملاحظاتك")
@@ -367,7 +388,7 @@ def notes():
 
 def focus():
     st.title("وقت لفكرة واحدة")
-    mins = st.selectbox("مدة التركيز بالدقائق", [5,15,25], index=2)
+    mins = st.selectbox("مدة التركيز بالدقائق", [5,15,25], index=2, width=240)
     with st.container(horizontal=True):
         if st.button("ابدأ الجلسة", type="primary"):
             ss.focus_end = time.time()+mins*60
@@ -376,7 +397,8 @@ def focus():
     @st.fragment(run_every=1)
     def clock():
         left = max(0, math.ceil(ss.focus_end-time.time())) if ss.focus_end else mins*60
-        st.metric("الوقت المتبقي", f"{left//60:02}:{left%60:02}")
+        running = bool(ss.focus_end) and left > 0
+        st.html(f'<div class="timer" role="timer" aria-label="الوقت المتبقي"><span>{"الوقت المتبقي" if running else "جاهز للبدء"}</span><b>{left//60:02}:{left%60:02}</b><div class="fc-bar"><i style="width:{(1-left/(mins*60))*100:.1f}%"></i></div></div>')
         if ss.focus_end and left == 0:
             st.success("انتهت الجلسة. خذ استراحة قصيرة.")
     clock()
@@ -393,8 +415,6 @@ PAGES = {
 pg = st.navigation({"مساحة التعلّم": [PAGES[n] for n in ["home","lessons","cards","quiz","notes","focus"]], "من النظرية إلى الواقع": [PAGES["lab"]]})
 with st.sidebar:
     st.html('<div class="brand"><span class="brand-mark">م</span><div><b>ميزان</b><small>هندسة التحكم بالعربية</small></div></div>')
-    if st.button("العودة إلى الصفحة الرئيسية", icon=":material/home:", width="stretch"):
-        st.switch_page(PAGES["home"])
 
 pg.run()
 if ss.get("_rendered_page") != pg.url_path:
